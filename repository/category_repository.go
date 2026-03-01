@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"belajar-golang-restfull-api/model/domain"
+	"belajar-golang-restful-api/model/domain"
 	"context"
 	"database/sql"
 )

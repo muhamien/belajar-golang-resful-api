@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"belajar-golang-restfull-api/helper"
-	"belajar-golang-restfull-api/model/web"
-	"belajar-golang-restfull-api/service"
+	"belajar-golang-restful-api/helper"
+	"belajar-golang-restful-api/model/web"
+	"belajar-golang-restful-api/service"
 	"net/http"
 	"strconv"
 
@@ -12,6 +12,12 @@ import (
 
 type CategoryControllerImpl struct {
 	CategoryService service.CategoryService
+}
+
+func NewCategoryController(categoryService service.CategoryService) CategoryController {
+	return &CategoryControllerImpl{
+		CategoryService: categoryService,
+	}
 }
 
 func (c CategoryControllerImpl) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

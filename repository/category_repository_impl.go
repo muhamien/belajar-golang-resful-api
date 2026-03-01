@@ -1,14 +1,18 @@
 package repository
 
 import (
-	"belajar-golang-restfull-api/helper"
-	"belajar-golang-restfull-api/model/domain"
+	"belajar-golang-restful-api/helper"
+	"belajar-golang-restful-api/model/domain"
 	"context"
 	"database/sql"
 	"errors"
 )
 
 type CategoryRepositoryImpl struct {
+}
+
+func NewCategoryRepository() CategoryRepository {
+	return &CategoryRepositoryImpl{}
 }
 
 func (c CategoryRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, Category domain.Category) domain.Category {
@@ -23,12 +27,12 @@ func (c CategoryRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, Category d
 	return Category
 }
 
-func (c CategoryRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, Category domain.Category) domain.Category {
+func (c CategoryRepositoryImpl) Update(ctx context.Context, tx *sql.Tx, category domain.Category) domain.Category {
 	SQL := "UPDATE category SET name = ? WHERE id = ?;"
-	_, err := tx.ExecContext(ctx, SQL, Category.Name, Category.Id)
+	_, err := tx.ExecContext(ctx, SQL, category.Name, category.Id)
 	helper.PanicIfError(err)
 
-	return Category
+	return category
 }
 
 func (c CategoryRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, Category domain.Category) {
@@ -38,14 +42,12 @@ func (c CategoryRepositoryImpl) Delete(ctx context.Context, tx *sql.Tx, Category
 }
 
 func (c CategoryRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, CategoryId int) (domain.Category, error) {
-	SQL := "SELECT * FROM category WHERE id = ?;"
+	SQL := "SELECT id, name FROM category WHERE id = ?;"
 	rows, err := tx.QueryContext(ctx, SQL, CategoryId)
 	helper.PanicIfError(err)
+	defer rows.Close()
 
 	Category := domain.Category{}
-
-	err = rows.Close()
-	helper.PanicIfError(err)
 
 	if rows.Next() {
 		err = rows.Scan(&Category.Id, &Category.Name)
@@ -57,11 +59,12 @@ func (c CategoryRepositoryImpl) FindById(ctx context.Context, tx *sql.Tx, Catego
 }
 
 func (c CategoryRepositoryImpl) FindAll(ctx context.Context, tx *sql.Tx) []domain.Category {
-	SQL := "SELECT * FROM category;"
+	SQL := "SELECT id, name FROM category;"
 	rows, err := tx.QueryContext(ctx, SQL)
-
 	helper.PanicIfError(err)
-	var categories []domain.Category
+	defer rows.Close()
+
+	categories := []domain.Category{}
 
 	for rows.Next() {
 		category := domain.Category{}

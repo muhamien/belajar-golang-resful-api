@@ -1,10 +1,11 @@
 package service
 
 import (
-	"belajar-golang-restfull-api/helper"
-	"belajar-golang-restfull-api/model/domain"
-	"belajar-golang-restfull-api/model/web"
-	"belajar-golang-restfull-api/repository"
+	"belajar-golang-restful-api/exception"
+	"belajar-golang-restful-api/helper"
+	"belajar-golang-restful-api/model/domain"
+	"belajar-golang-restful-api/model/web"
+	"belajar-golang-restful-api/repository"
 	"context"
 	"database/sql"
 
@@ -15,6 +16,14 @@ type CategoryServiceImpl struct {
 	CategoryRepository repository.CategoryRepository
 	DB                 *sql.DB
 	Validate           *validator.Validate
+}
+
+func NewCategoryService(categoryRepository repository.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryService {
+	return &CategoryServiceImpl{
+		CategoryRepository: categoryRepository,
+		DB:                 db,
+		Validate:           validate,
+	}
 }
 
 func (service CategoryServiceImpl) Create(ctx context.Context, request web.CategoryCreateRequest) web.CategoryResponse {
@@ -43,11 +52,13 @@ func (service CategoryServiceImpl) Update(ctx context.Context, request web.Categ
 	defer helper.CommitOrRollback(tx)
 
 	category, err := service.CategoryRepository.FindById(ctx, tx, request.Id)
-	helper.PanicIfError(err)
+	if err != nil {
+		panic(exception.NewNotFoundError(err.Error()))
+	}
 
 	category.Name = request.Name
 
-	category = service.CategoryRepository.Save(ctx, tx, category)
+	category = service.CategoryRepository.Update(ctx, tx, category)
 
 	return helper.ToCategoryResponse(category)
 }
@@ -81,11 +92,5 @@ func (service CategoryServiceImpl) FindAll(ctx context.Context) []web.CategoryRe
 
 	categories := service.CategoryRepository.FindAll(ctx, tx)
 
-	var categoryResponse []web.CategoryResponse
-
-	for _, category := range categories {
-		categoryResponse = append(categoryResponse, helper.ToCategoryResponse(category))
-	}
-
-	return categoryResponse
+	return helper.ToCategoryResponses(categories)
 }

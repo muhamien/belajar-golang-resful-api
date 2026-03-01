@@ -1,8 +1,8 @@
 package helper
 
 import (
-	"belajar-golang-restfull-api/model/domain"
-	"belajar-golang-restfull-api/model/web"
+	"belajar-golang-restful-api/model/domain"
+	"belajar-golang-restful-api/model/web"
 )
 
 func ToCategoryResponse(category domain.Category) web.CategoryResponse {
@@ -10,4 +10,12 @@ func ToCategoryResponse(category domain.Category) web.CategoryResponse {
 		Id:   category.Id,
 		Name: category.Name,
 	}
+}
+
+func ToCategoryResponses(categories []domain.Category) []web.CategoryResponse {
+	categoryResponses := []web.CategoryResponse{}
+	for _, category := range categories {
+		categoryResponses = append(categoryResponses, ToCategoryResponse(category))
+	}
+	return categoryResponses
 }
