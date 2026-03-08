@@ -662,10 +662,11 @@ func NewDB() *sql.DB {
     db, err := sql.Open("mysql", "root@tcp(localhost:3306)/belajar_golang_restful_api")
     helper.PanicIfError(err)
 
-    db.SetMaxIdleConns(5)           // Koneksi idle yang dipertahankan
-    db.SetMaxOpenConns(20)          // Maksimal koneksi terbuka
-    db.SetConnMaxLifetime(60 * time.Minute)  // Umur maksimal koneksi
-    db.SetConnMaxIdleTime(10 * time.Minute)  // Umur maksimal koneksi idle
+    // setup database pooling
+    db.SetMaxIdleConns(5)                   // minimal jumlah koneksi standby (idle)
+    db.SetMaxOpenConns(20)                  // maksimal jumlah koneksi yang bisa dibuka
+    db.SetConnMaxLifetime(60 * time.Minute) // berapa lama koneksi boleh digunakan sebelum direfresh
+    db.SetConnMaxIdleTime(10 * time.Minute) // berapa lama koneksi idle boleh bertahan sebelum dihapus
 
     return db
 }
@@ -675,10 +676,10 @@ func NewDB() *sql.DB {
 
 | Setting | Value | Penjelasan |
 |---|---|---|
-| `MaxIdleConns` | 5 | Jumlah koneksi idle yang tetap dibuka (siap pakai) |
-| `MaxOpenConns` | 20 | Batas maksimal koneksi yang bisa dibuka ke database |
-| `ConnMaxLifetime` | 60 min | Setelah 60 menit, koneksi akan ditutup dan dibuat baru |
-| `ConnMaxIdleTime` | 10 min | Koneksi idle yang tidak terpakai >10 menit akan ditutup |
+| `MaxIdleConns` | 5 | Minimal jumlah koneksi standby yang siap dilayani sewaktu-waktu |
+| `MaxOpenConns` | 20 | Batas maksimal koneksi paralel yang dapat dibuat dari aplikasi ke DB |
+| `ConnMaxLifetime` | 60 min | Durasi mutlak koneksi dapat digunakan. Menghindari stale connection dari MySQL server (refresh per jam). |
+| `ConnMaxIdleTime` | 10 min | Waktu tenggang sebelum koneksi idle/menganggur ditutup untuk menghemat resource |
 
 #### b. `app/router.go` — Route Definitions
 
